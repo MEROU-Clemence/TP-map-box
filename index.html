@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TP-Map-Box</title>
+
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <main>
+        <h1>🎈 Ajouter un évènement</h1>
+
+        <form novalidate>
+            <div>
+                <p>Titre de l'événement</p>
+                <input type="text" id="title">
+            </div>
+
+            <div>
+                <p>Description de l'événement</p>
+                <textarea id="descrip-event"></textarea>
+            </div>
+
+            <div>
+                <p>Date de début</p>
+                <input type="datetime-local" id="dates-start">
+            </div>
+
+            <div>
+                <p>Date de fin</p>
+                <input type="datetime-local" id="dates-end">
+            </div>
+
+            <div>
+                <p>Latitude</p>
+                <input type="number" id="coordonnees-lat">
+            </div>
+
+            <div>
+                <p>Longitude</p>
+                <input type="number" id="coordonnees-lon">
+            </div>
+        </form>
+
+        <div>
+            <button type="button" id="new-event-add">Ajouter</button>
+        </div>
+
+        <div>
+            <button type="button" id="clear-all">Tout supprimer</button>
+        </div>
+    </main>
+</body>
+
+</html>
