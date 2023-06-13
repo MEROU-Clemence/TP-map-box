@@ -12,6 +12,9 @@ import 'mapbox-gl/dist/mapbox-gl.css';
 // importer le fichier css
 import '../assets/style.css';
 import '../../style.css';
+// import des autres fichiers JS
+import LocalEvent from './LocalEvent';
+
 
 class App {
     // Eléments du DOM:
@@ -119,7 +122,8 @@ class App {
         elButtonValidForm.id = 'new-event-add';
         elButtonValidForm.textContent = 'Ajouter';
         // Ajout d'un événement sur le bouton
-        // elButtonValidForm.addEventListener('click', this.handleButtonValidForm.bind(this));
+        this.elButtonValidForm = elButtonValidForm;
+        this.elButtonValidForm.addEventListener('click', this.handleButtonClick.bind(this));
 
         // BOUTON VIDER EVENT
         // div
@@ -130,7 +134,8 @@ class App {
         elButtonClearAll.id = 'clear-all';
         elButtonClearAll.textContent = 'Tout supprimer';
         // Ajout d'un événement sur le bouton
-        // elButtonClearAll.addEventListener('click', this.handleButtonClearAll.bind(this));
+        this.elButtonClearAll = elButtonClearAll;
+        this.elButtonClearAll.addEventListener('click', this.handleButtonClearAll.bind(this));
 
         // TOUS MES APPELS:
         // Input titre dans div titre:
@@ -167,32 +172,79 @@ class App {
         document.body.appendChild(elMain);
 
 
-
-        // TODO: EVENEMENTS DES BOUTONS:
-        // Valider le formulaire, événement du bouton VALIDER:
-        // handleButtonValidForm() {
-        //     // TODO: Valider mon événement.
-        // };
-
-        // // Supprimer formulaire, événement sur bouton TOUT SUPPRIMER:
-        // handleButtonClearAll(){
-        //     // TODO: Supprimer mon formulaire.
-        // };
-
         // ******************MAP*********************
         this.elDivMap = document.createElement('div');
         this.elDivMap.id = 'map';
 
         document.body.append(this.elDivMap);
+
+    };
+
+    // TODO: EVENEMENTS DES BOUTONS:
+    // Valider le formulaire, événement du bouton VALIDER:
+    handleButtonClick() {
+        console.log('handleButtonValidFormAdd');
+        // on récupère les valeurs des inputs en créant des constantes :
+        const newTitle = this.elInputTitleEvent.value.trim()
+        const newDatesStart = this.elInputDatesStart.value.trim();
+        const newDatesEnd = this.elInputDatesEnd.value.trim();
+        const newDescription = this.elTextareaDescripEvent.value.trim();
+
+        // on créé une nouvelle note
+        // on construit l'objet littéral
+        const newLocalEvent = {
+            title: newTitle == "" ? "Evénement sans titre" : newTitle,
+            datesStart: newDatesStart == "" ? "JJ/MM/AAAA" : newDatesStart,
+            datesEnd: newDatesEnd == "" ? "JJ/MM/AAAA" : newDatesEnd,
+            description: newDescription == "" ? "Evénement sans description" : newDescription,
+        }
+        // création événement
+        const localEvent = new LocalEvent(newLocalEvent);
+
+        // on rajoute l'objet littéral sur la maps:
+        const marker = new mapboxgl.Marker().setLngLat([this.elInputGeoCoordLon.value, this.elInputGeoCoordLat.value]).addTo(this.map);
+
+        // créer instance de la pop-up
+        const popup = new mapboxgl.Popup().setHTML(localEvent.getDom().outerHTML);
+
+        marker.on('mouseenter', function () {
+            if (!this.getPopup()) {
+                this.setPopup(popup);
+            }
+            this.togglePopup();
+        }.bind(marker));
+
+        marker.on('mouseleave', function () {
+            if (this.getPopup() && this.getPopup().isOpen()) {
+                this.togglePopup();
+            }
+        }.bind(marker));
+
+        // ajout pop-up au marker
+        marker.setPopup(popup);
+
+        // ajout marqueur à la carte:
+        marker.addTo(this.map);
     }
+
+
+    // TODO: Supprimer formulaire, événement sur bouton TOUT SUPPRIMER:
+    handleButtonClearAll() {
+        const elMain = document.querySelector('main');
+        elMain.remove();
+    };
 
     // méthode qui capte le click sur la Map
     handleClickMap(evt) {
         console.log(evt);
         console.log("Latitude : " + evt.lngLat.lat);
         console.log("Longitude : " + evt.lngLat.lng);
+
+        // relier mon click à mes inputs dans le formulaire
+        this.elInputGeoCoordLat.value = evt.lngLat.lat;
+        this.elInputGeoCoordLon.value = evt.lngLat.lng;
     }
-}
+};
 
 const app = new App();
 
