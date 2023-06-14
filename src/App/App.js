@@ -14,7 +14,7 @@ import '../assets/style.css';
 import '../../style.css';
 // import des autres fichiers JS
 import LocalEvent from './LocalEvent';
-
+import ColorMark from './ColorMarker';
 
 class App {
     // Eléments du DOM:
@@ -30,6 +30,10 @@ class App {
     elDivMap;
     // instancier la class
     map;
+    // ma liste de markers d'événements:
+    eventMarkers = [];
+    // propriété pour ma class CustomMarkers:
+    customMarkers;
 
     start() {
         console.log('App démarrée...');
@@ -50,6 +54,9 @@ class App {
         });
         const nav = new mapboxgl.NavigationControl();
         this.map.addControl(nav, 'top-left');
+
+        // on initie le marker à null
+        this.marker = null;
 
         // on écoute le click sur la map
         this.map.on('click', this.handleClickMap.bind(this));
@@ -180,10 +187,9 @@ class App {
 
     };
 
-    // TODO: EVENEMENTS DES BOUTONS:
+    // EVENEMENTS DES BOUTONS:
     // Valider le formulaire, événement du bouton VALIDER:
     handleButtonClick() {
-        console.log('handleButtonValidFormAdd');
         // on récupère les valeurs des inputs en créant des constantes :
         const newTitle = this.elInputTitleEvent.value.trim()
         const newDatesStart = this.elInputDatesStart.value.trim();
@@ -194,11 +200,12 @@ class App {
         // on construit l'objet littéral
         const newLocalEvent = {
             title: newTitle == "" ? "Evénement sans titre" : newTitle,
-            datesStart: newDatesStart == "" ? "JJ/MM/AAAA" : newDatesStart,
-            datesEnd: newDatesEnd == "" ? "JJ/MM/AAAA" : newDatesEnd,
+            datesStart: newDatesStart == "" ? "du JJ/MM/AAAA" : newDatesStart,
+            datesEnd: newDatesEnd == "" ? "au JJ/MM/AAAA" : newDatesEnd,
             description: newDescription == "" ? "Evénement sans description" : newDescription,
+
         }
-        // création événement
+        // création événement class LocalEvent
         const localEvent = new LocalEvent(newLocalEvent);
 
         // on rajoute l'objet littéral sur la maps:
@@ -207,42 +214,44 @@ class App {
         // créer instance de la pop-up
         const popup = new mapboxgl.Popup().setHTML(localEvent.getDom().outerHTML);
 
-        marker.on('mouseenter', function () {
-            if (!this.getPopup()) {
-                this.setPopup(popup);
-            }
-            this.togglePopup();
-        }.bind(marker));
-
-        marker.on('mouseleave', function () {
-            if (this.getPopup() && this.getPopup().isOpen()) {
-                this.togglePopup();
-            }
-        }.bind(marker));
-
         // ajout pop-up au marker
         marker.setPopup(popup);
 
+        // ajout infos event au survol de souris:
+        marker.getElement().title = newLocalEvent.title + ' ' + newLocalEvent.datesStart + ' ' + newLocalEvent.datesEnd;
+
         // ajout marqueur à la carte:
         marker.addTo(this.map);
+
+        // ajout du marker à la liste des markers des événements:
+        this.eventMarkers.push(marker);
     }
 
 
-    // TODO: Supprimer formulaire, événement sur bouton TOUT SUPPRIMER:
+    // Supprimer tous les markers des événements sur bouton TOUT SUPPRIMER:
     handleButtonClearAll() {
-        const elMain = document.querySelector('main');
-        elMain.remove();
+        // on supprime
+        this.eventMarkers.forEach(marker => marker.remove());
+
+        // on vide la liste
+        this.eventMarkers = [];
     };
 
-    // méthode qui capte le click sur la Map
+    // méthode du click sur la Map
     handleClickMap(evt) {
-        console.log(evt);
-        console.log("Latitude : " + evt.lngLat.lat);
-        console.log("Longitude : " + evt.lngLat.lng);
+        if (this.marker === null) {
+            // Aucun événement ajouté donc je créé un nouveau marker
+            this.marker = new mapboxgl.Marker()
+                .setLngLat(evt.lngLat)
+                .addTo(this.map);
+        } else {
+            // déplacer le marker vers la nouvelle position
+            this.marker.setLngLat(evt.lngLat);
+        };
 
         // relier mon click à mes inputs dans le formulaire
-        this.elInputGeoCoordLat.value = evt.lngLat.lat;
-        this.elInputGeoCoordLon.value = evt.lngLat.lng;
+        this.elInputGeoCoordLat.value = evt.lngLat.lat.toString();
+        this.elInputGeoCoordLon.value = evt.lngLat.lng.toString();
     }
 };
 

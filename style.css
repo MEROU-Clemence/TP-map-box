@@ -34,7 +34,7 @@ textarea {
 #new-event-add {
     background-color: #016d43;
     border-radius: 5px;
-    color: azure;
+    color: #f0ffff;
     font-size: 15px;
     margin: 20px 105px 5px 105px;
     padding: 3px;
@@ -47,4 +47,16 @@ textarea {
     font-size: 15px;
     margin: 5px 50px 0 105px;
     padding: 3px;
+}
+
+.mapboxgl-popup-content li {
+    background-color: green;
+    border-radius: 5px;
+    list-style-type: none;
+    padding: 10px 10px 20px 10px;
+}
+
+.mapboxgl-popup-content li .title-local-event {
+    color: #f0ffff;
+    font-size: 18px;
 }
