@@ -14,7 +14,7 @@ import '../assets/style.css';
 import '../../style.css';
 // import des autres fichiers JS
 import LocalEvent from './LocalEvent';
-import ColorMark from './ColorMarker';
+import ButtonMajInfo from './ButtonMajInfo';
 
 class App {
     // Eléments du DOM:
@@ -52,6 +52,8 @@ class App {
             center: [2.79, 42.68],
             zoom: 12
         });
+
+        // Bouton navigation
         const nav = new mapboxgl.NavigationControl();
         this.map.addControl(nav, 'top-left');
 
@@ -60,7 +62,11 @@ class App {
 
         // on écoute le click sur la map
         this.map.on('click', this.handleClickMap.bind(this));
-    }
+
+        // TODO: Je fabrique le bouton de Mise à jour des infos de ma map:
+        const buttonMajInfo = new ButtonMajInfo();
+        this.map.addControl(buttonMajInfo, 'top-left');
+    };
 
     loadDom() {
 
@@ -203,30 +209,18 @@ class App {
             datesStart: newDatesStart == "" ? "du JJ/MM/AAAA" : newDatesStart,
             datesEnd: newDatesEnd == "" ? "au JJ/MM/AAAA" : newDatesEnd,
             description: newDescription == "" ? "Evénement sans description" : newDescription,
-
+            latitude: this.elInputGeoCoordLat.value,
+            longitude: this.elInputGeoCoordLon.value,
         }
         // création événement class LocalEvent
         const localEvent = new LocalEvent(newLocalEvent);
 
-        // on rajoute l'objet littéral sur la maps:
-        const marker = new mapboxgl.Marker().setLngLat([this.elInputGeoCoordLon.value, this.elInputGeoCoordLat.value]).addTo(this.map);
-
-        // créer instance de la pop-up
-        const popup = new mapboxgl.Popup().setHTML(localEvent.getDom().outerHTML);
-
-        // ajout pop-up au marker
-        marker.setPopup(popup);
-
-        // ajout infos event au survol de souris:
-        marker.getElement().title = newLocalEvent.title + ' ' + newLocalEvent.datesStart + ' ' + newLocalEvent.datesEnd;
-
         // ajout marqueur à la carte:
-        marker.addTo(this.map);
+        localEvent.marker.addTo(this.map);
 
         // ajout du marker à la liste des markers des événements:
-        this.eventMarkers.push(marker);
+        this.eventMarkers.push(localEvent);
     }
-
 
     // Supprimer tous les markers des événements sur bouton TOUT SUPPRIMER:
     handleButtonClearAll() {

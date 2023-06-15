@@ -49,14 +49,20 @@ textarea {
     padding: 3px;
 }
 
-.mapboxgl-popup-content li {
+.mapboxgl-popup-content .localevent {
     background-color: green;
     border-radius: 5px;
     list-style-type: none;
     padding: 10px 10px 20px 10px;
 }
 
-.mapboxgl-popup-content li .title-local-event {
+.mapboxgl-popup-content .localevent .title-local-event {
     color: #f0ffff;
     font-size: 18px;
+}
+
+.button-maj-info {
+    height: 30px;
+    padding: 10px;
+    width: 30px;
 }

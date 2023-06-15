@@ -1,4 +1,4 @@
-import mapboxGl from 'mapbox-gl';
+import mapboxgl from 'mapbox-gl';
 import './App';
 
 class LocalEvent {
@@ -7,6 +7,8 @@ class LocalEvent {
     datesStart;
     datesEnd;
     description;
+    latitude;
+    longitude;
 
     // déclaration constructeur
     constructor(localEvent) {
@@ -14,8 +16,10 @@ class LocalEvent {
         this.datesStart = localEvent.datesStart;
         this.datesEnd = localEvent.datesEnd;
         this.description = localEvent.description;
-        this.marker = null;
-        this.popup = null;
+        this.latitude = localEvent.latitude;
+        this.longitude = localEvent.longitude;
+        this.initMarker();
+
     };
 
     // Evénement au click:
@@ -28,7 +32,7 @@ class LocalEvent {
 
         // actions avec ces elements.
         // création pop-up:
-        this.popup = new mapboxGl.Popup().setHTML(`
+        this.popup = new mapboxgl.Popup().setHTML(`
             <div>
                 <h2>${elDivTitle.textContent}</h2>
                 <p>Début: ${elInputDatesStart.textContent}, Fin: ${elInputDatesEnd.textContent}</p>
@@ -44,34 +48,68 @@ class LocalEvent {
 
     // méthode qui construit et retourne l'élément HTML de la note
     getDom() {
-        const elLi = document.createElement('li');
-        elLi.classList.add('localevent');
+        const elDiv = document.createElement('div');
+        elDiv.classList.add('localevent');
 
         // création éléments HTML:
         const titleDiv = document.createElement('div');
         titleDiv.classList.add('title-local-event');
         titleDiv.textContent = this.title;
-        elLi.appendChild(titleDiv);
+        elDiv.appendChild(titleDiv);
 
         const datesStartDiv = document.createElement('div');
         datesStartDiv.classList.add('date-start-local-event');
         datesStartDiv.textContent = this.datesStart;
-        elLi.appendChild(datesStartDiv);
+        elDiv.appendChild(datesStartDiv);
 
         const datesEndDiv = document.createElement('div');
         datesEndDiv.classList.add('date-end-local-event');
         datesEndDiv.textContent = this.datesEnd;
-        elLi.appendChild(datesEndDiv);
+        elDiv.appendChild(datesEndDiv);
 
         const descriptionDiv = document.createElement('div');
         descriptionDiv.classList.add('description-local-event');
         descriptionDiv.textContent = this.description;
-        elLi.appendChild(descriptionDiv);
+        elDiv.appendChild(descriptionDiv);
 
-        elLi.addEventListener('click', this.handleButtonClick.bind(this));
-
-        return elLi;
+        return elDiv;
     }
+
+    initMarker() {
+
+        // on rajoute l'objet littéral sur la maps:
+        this.marker = new mapboxgl.Marker({ color: 'grey' }).setLngLat({ lon: this.longitude, lat: this.latitude }).addTo(this.map);
+
+        // Obtenir le timestamp actuel
+        const currentTimestamp = Math.floor(Date.now());
+
+        // Obtenir le timestamp à partir d'une date spécifique pour date DEBUT Event
+        const specificDateStart = new Date(this.datesStart);
+        const specificTimestampStart = Math.floor(specificDateStart.getTime());
+
+        // Obtenir le timestamp à partir d'une date spécifique pour date FIN Event
+        const specificDateEnd = new Date(this.datesEnd);
+        const specificTimestampEnd = Math.floor(specificDateEnd.getTime());
+
+        // création fonction avec variables couleurs:
+        if (specificTimestampStart >= (currentTimestamp + (3 * 24 * 3600 * 1000))) {
+            this.marker = new mapboxgl.Marker({ color: 'green' }).setLngLat({ lon: this.longitude, lat: this.latitude }).addTo(this.map);
+        } else if (specificTimestampStart < currentTimestamp && specificTimestampEnd < currentTimestamp) {
+            this.marker = new mapboxgl.Marker({ color: 'red' }).setLngLat({ lon: this.longitude, lat: this.latitude }).addTo(this.map);
+        } else if (specificTimestampStart || specificTimestampEnd <= (currentTimestamp + (3 * 24 * 3600 * 1000))) {
+            this.marker = new mapboxgl.Marker({ color: 'orange' }).setLngLat({ lon: this.longitude, lat: this.latitude }).addTo(this.map);
+        } else return
+
+
+        // créer instance de la pop-up
+        const popup = new mapboxgl.Popup().setHTML(this.getDom().outerHTML);
+
+        // ajout pop-up au marker
+        this.marker.setPopup(popup);
+
+        // ajout infos event au survol de souris:
+        this.marker.getElement().title = this.title + ' ' + this.datesStart + ' ' + this.datesEnd;
+    };
 };
 
 export default LocalEvent;
