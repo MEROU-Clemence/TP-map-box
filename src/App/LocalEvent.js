@@ -37,12 +37,13 @@ class LocalEvent {
                 <h2>${elDivTitle.textContent}</h2>
                 <p>Début: ${elInputDatesStart.textContent}, Fin: ${elInputDatesEnd.textContent}</p>
                 <p>${elDivDescripEvent.textContent}</p>
+                <p>${message}</p>
             </div>
         `);
 
         // créer le marker et l'ajouter à la carte
         this.marker = new mapboxgl.Marker()
-            .setLngLat([this.elInputGeoCoordLon.value, this.elInputGeoCoordLat.value])
+            .setLngLat([this.longitude, this.latitude])
             .addTo(this.map);
     };
 
@@ -76,9 +77,9 @@ class LocalEvent {
     }
 
     initMarker() {
-
-        // on rajoute l'objet littéral sur la maps:
-        this.marker = new mapboxgl.Marker({ color: 'grey' }).setLngLat({ lon: this.longitude, lat: this.latitude }).addTo(this.map);
+        // variations de couleurs et de messages:
+        let color = 'green';
+        let message = '';
 
         // Obtenir le timestamp actuel
         const currentTimestamp = Math.floor(Date.now());
@@ -93,22 +94,39 @@ class LocalEvent {
 
         // création fonction avec variables couleurs:
         if (specificTimestampStart >= (currentTimestamp + (3 * 24 * 3600 * 1000))) {
-            this.marker = new mapboxgl.Marker({ color: 'green' }).setLngLat({ lon: this.longitude, lat: this.latitude }).addTo(this.map);
+            color = 'green';
+            message = 'Réservez votre date bande de foux furieux! Evénement à venir prochainement :) '
         } else if (specificTimestampStart < currentTimestamp && specificTimestampEnd < currentTimestamp) {
-            this.marker = new mapboxgl.Marker({ color: 'red' }).setLngLat({ lon: this.longitude, lat: this.latitude }).addTo(this.map);
+            color = 'red';
+            message = 'Quel dommage, vous avez raté cet événement!';
         } else if (specificTimestampStart || specificTimestampEnd <= (currentTimestamp + (3 * 24 * 3600 * 1000))) {
-            this.marker = new mapboxgl.Marker({ color: 'orange' }).setLngLat({ lon: this.longitude, lat: this.latitude }).addTo(this.map);
+            color = 'orange';
+            message = 'Attention, commence dans ' + (((specificTimestampStart - currentTimestamp) / (1000 * 60 * 60)) % 24) + ' heures.';
         } else return
 
+        // on rajoute l'objet littéral sur la maps:
+        this.marker = new mapboxgl.Marker({ color: color }).setLngLat({ lon: this.longitude, lat: this.latitude }).addTo(this.map);
 
         // créer instance de la pop-up
-        const popup = new mapboxgl.Popup().setHTML(this.getDom().outerHTML);
+        let popup = new mapboxgl.Popup().setHTML(this.getDom().outerHTML + message);
 
         // ajout pop-up au marker
         this.marker.setPopup(popup);
 
         // ajout infos event au survol de souris:
         this.marker.getElement().title = this.title + ' ' + this.datesStart + ' ' + this.datesEnd;
+
+    };
+
+    toJSON() {
+        return {
+            title: this.title,
+            datesStart: this.datesStart,
+            datesEnd: this.datesEnd,
+            description: this.description,
+            latitude: this.latitude,
+            longitude: this.longitude,
+        }
     };
 };
 

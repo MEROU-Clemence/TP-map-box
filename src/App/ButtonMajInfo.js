@@ -1,3 +1,6 @@
+import './App';
+import './LocalEvent';
+
 // je créé mon bouton pour rafraichir ma page
 class ButtonMajInfo {
     onAdd(map) {
@@ -9,8 +12,8 @@ class ButtonMajInfo {
         this._container.innerHTML = '🟪';
 
         this._container.addEventListener('click', function () {
-            // TODO: son action pour rafraichir !
-            console.log('%cUUUUUUUUh ca marche, merci Olivier!!!!!', 'font-size:100px;color:purple');
+            // action pour rafraichir et mettre la page à l'heure du timestamp actuel !
+            location.reload();
         });
 
         return this._container;

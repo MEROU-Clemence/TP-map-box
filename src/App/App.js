@@ -15,6 +15,8 @@ import '../../style.css';
 // import des autres fichiers JS
 import LocalEvent from './LocalEvent';
 import ButtonMajInfo from './ButtonMajInfo';
+// import de mon localStorage
+import ServiceMarkersAndEvent from './Services/ServiceMarkersAndEvent';
 
 class App {
     // Eléments du DOM:
@@ -31,15 +33,34 @@ class App {
     // instancier la class
     map;
     // ma liste de markers d'événements:
-    eventMarkers = [];
+    arrEventMarkers = [];
     // propriété pour ma class CustomMarkers:
     customMarkers;
 
     start() {
         console.log('App démarrée...');
+
+        // on instancie le service de données du Storage
+        const storageService = new ServiceMarkersAndEvent();
+
+        // interface utilisateur à charger
         this.loadDom();
+        // map initiale
         this.initMap();
-    }
+
+        // THE localStorage
+        // on récupère les données stockées dans le localStorage
+        const arrMarkersAndEventService = storageService.readStorage();
+
+        // si le storage n'est pas vide, on remplit la propriété eventMarkers
+        if (arrMarkersAndEventService && arrMarkersAndEventService.length > 0) {
+            for (let markersData of arrMarkersAndEventService) {
+                const localEvent = new LocalEvent(markersData);
+                localEvent.marker.addTo(this.map);
+                this.arrEventMarkers.push(localEvent);
+            }
+        };
+    };
 
     initMap() {
         // initialiser la map
@@ -63,7 +84,7 @@ class App {
         // on écoute le click sur la map
         this.map.on('click', this.handleClickMap.bind(this));
 
-        // TODO: Je fabrique le bouton de Mise à jour des infos de ma map:
+        // Je fabrique le bouton de Mise à jour des infos de ma map:
         const buttonMajInfo = new ButtonMajInfo();
         this.map.addControl(buttonMajInfo, 'top-left');
     };
@@ -212,6 +233,7 @@ class App {
             latitude: this.elInputGeoCoordLat.value,
             longitude: this.elInputGeoCoordLon.value,
         }
+
         // création événement class LocalEvent
         const localEvent = new LocalEvent(newLocalEvent);
 
@@ -219,16 +241,22 @@ class App {
         localEvent.marker.addTo(this.map);
 
         // ajout du marker à la liste des markers des événements:
-        this.eventMarkers.push(localEvent);
+        this.arrEventMarkers.push(localEvent);
+        console.log(this.arrEventMarkers);
+
+        // puis aussi sauvegarder les données dans le localStorage
+        const storageService = new ServiceMarkersAndEvent();
+        storageService.saveStorage(this.arrEventMarkers);
     }
 
-    // Supprimer tous les markers des événements sur bouton TOUT SUPPRIMER:
+    // Supprimer tous les markers sur bouton TOUT SUPPRIMER:
     handleButtonClearAll() {
+
         // on supprime
-        this.eventMarkers.forEach(marker => marker.remove());
+        this.arrEventMarkers.forEach(localEvent => localEvent.marker.remove());
 
         // on vide la liste
-        this.eventMarkers = [];
+        this.arrEventMarkers = [];
     };
 
     // méthode du click sur la Map
